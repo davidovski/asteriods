@@ -8,4 +8,5 @@ ${PROG}: ${PROG}.c
 	${CC} ${PROG}.c -o ${PROG} ${FLAGS}
 
 run: ${PROG}
-	./${PROG}
+	./${PROG} 
+
