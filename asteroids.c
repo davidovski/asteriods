@@ -187,7 +187,6 @@ int draw() {
 				(Vector2){b->pos.x - LAZER_LENGTH*b->vel.x, b->pos.y - LAZER_LENGTH*b->vel.y},
 				fg
 			);
-			printf("(%f, %f)\n", b->vel.x, b->vel.y);
 			b->pos.x += b->vel.x;
 			b->pos.y += b->vel.y;
 			clamp(&b->pos);
