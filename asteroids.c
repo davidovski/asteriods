@@ -183,11 +183,11 @@ int draw() {
 	for (int i=0; i < sizeof(bullets) / sizeof(Bullet); i++) {
 		Bullet *b = &bullets[i];
 		if (b->size > 0) {
-			DrawLine(
-				b->pos.x, b->pos.y, 
-				b->pos.x - (LAZER_LENGTH*b->vel.x), b->pos.y - (LAZER_LENGTH*b->vel.x),
+			DrawLineV( b->pos,
+				(Vector2){b->pos.x - LAZER_LENGTH*b->vel.x, b->pos.y - LAZER_LENGTH*b->vel.y},
 				fg
 			);
+			printf("(%f, %f)\n", b->vel.x, b->vel.y);
 			b->pos.x += b->vel.x;
 			b->pos.y += b->vel.y;
 			clamp(&b->pos);
