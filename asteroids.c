@@ -15,16 +15,19 @@ const Color fg = GREEN;
 const float NOSE = PI/8;
 const int LENGTH = 36;
 const float THRUST = 0.1;
-const int SPAWN_RATE = 20*60;
+const int SPAWN_RATE = 10*60;
+const float S_SPEED = 2.0f;
+const int LAZER_LENGTH = 8;
 
-typedef struct Asteroids {
+typedef struct B {
 	Vector2 pos;
 	Vector2 vel;
 	int size;
-} Asteroid;
+} Asteroid, Bullet;
 
 Vector2 sky[256];
 Asteroid asteroids[64];
+Bullet bullets[8];
 
 Vector2 pos = {(float) height / 2, (float) width / 2};
 Vector2 vel = {0.0f, 0.0f};
@@ -42,11 +45,12 @@ double magnitude(Vector2 *vec) {
 }
 
 
-int randVec(Vector2 *vec, int m) {
+int randVec(Vector2 *vec, float m) {
 		vec->x = rand() % 256;
 		vec->y = rand() % 256;
-		vec->x /= magnitude(vec);
-		vec->y /= magnitude(vec);
+		double mag = magnitude(vec);
+		vec->x /= mag;
+		vec->y /= mag;
 		vec->x *= m;
 		vec->y *= m;
 }
@@ -71,6 +75,25 @@ int drawPlayer() {
 		wingpos(1),
 		fg
 	);
+}
+
+int shoot() {
+	Vector2 position = pos;
+	Vector2 velocity = (Vector2){
+		S_SPEED * sin(angle),
+		S_SPEED * cos(angle)
+	};
+
+	int i = 0;
+	while (i < sizeof(bullets) / sizeof(Bullet)) {
+		if (bullets[i].size == 0) {
+			bullets[i].pos = position;
+			bullets[i].vel = velocity;
+			bullets[i].size = 1; 
+			break;
+		}
+		i++;
+	}
 }
 
 int addAsteroid(Vector2 position, Vector2 velocity, int size) {
@@ -108,9 +131,13 @@ int spawnAsteroid() {
 int breakAsteroid(int i) {
 	asteroids[i].size -= 1;
 	if (asteroids[i].size > 0) {
-		double m = magnitude(&asteroids[i].vel)/0.5d;
+		double m = magnitude(&asteroids[i].vel)*0.5d;
 		randVec(&asteroids[i].vel, m);
-		addAsteroid(asteroids[i].pos, (Vector2){-asteroids[i].vel.x -asteroids[i].vel.y}, asteroids[i].size);
+		addAsteroid(
+			asteroids[i].pos,
+			(Vector2){-asteroids[i].vel.x, -asteroids[i].vel.y},
+			asteroids[i].size
+		);
 	}
 }
 //DEBUG HERE
@@ -129,13 +156,8 @@ int draw() {
 	//DEBUG AUTOBREAKING ASTEROIDS
 	if (IsKeyDown(KEY_SPACE)) {
 		if (lpress == 0) {
-		for (int i=0; i < sizeof(asteroids) / sizeof(Asteroid); i++) {
-			if (asteroids[i].size > 0) {
-				breakAsteroid(i);
-				break;
-				}
-		}
-		lpress = 1;
+			shoot();
+			lpress = 1;
 		}
 	} else {
 		lpress = 0;
@@ -157,6 +179,20 @@ int draw() {
 		DrawPixelV(sky[i], fg);
 	}
 	drawPlayer();
+	
+	for (int i=0; i < sizeof(bullets) / sizeof(Bullet); i++) {
+		Bullet *b = &bullets[i];
+		if (b->size > 0) {
+			DrawLine(
+				b->pos.x, b->pos.y, 
+				b->pos.x - (LAZER_LENGTH*b->vel.x), b->pos.y - (LAZER_LENGTH*b->vel.x),
+				fg
+			);
+			b->pos.x += b->vel.x;
+			b->pos.y += b->vel.y;
+			clamp(&b->pos);
+		}
+	}
 
 	for (int i=0; i < sizeof(asteroids) / sizeof(Asteroid); i++) {
 		if (asteroids[i].size > 0) {
@@ -174,10 +210,6 @@ int draw() {
 	EndDrawing();
 }
 
-
-int update() {
-}
-
 int main() {
 	srand(time(0));
 
@@ -185,10 +217,14 @@ int main() {
 		sky[i] = (Vector2){rand() % width, rand() % height};
 	}
 	for (int i=0; i < sizeof(asteroids) / sizeof(Asteroid); i++) {
-		asteroids[i] = (Asteroid){(Vector2){0,0}, (Vector2){0,0}, 0, };
+		asteroids[i] = (Asteroid){(Vector2){0,0}, (Vector2){0,0}, 0};
 	}
-
-	spawnAsteroid();
+	for (int i=0; i < sizeof(bullets) / sizeof(bullets); i++) {
+		bullets[i] = (Bullet){(Vector2){0,0}, (Vector2){0,0}, 0};
+	}
+	for (int i = 1; i < rand()%10; i++) {
+		spawnAsteroid();
+	}
 
 	InitWindow(width, height, "game");
 
@@ -197,7 +233,6 @@ int main() {
 	SetTargetFPS(60);
 
 	while (!WindowShouldClose()) {
-		update();
 		draw();
 	}
 	CloseWindow();
