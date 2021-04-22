@@ -16,7 +16,7 @@ const float NOSE = PI/8;
 const int LENGTH = 36;
 const float THRUST = 0.1;
 const int SPAWN_RATE = 10*60;
-const float S_SPEED = 2.0f;
+const float S_SPEED = 4.0f;
 const int LAZER_LENGTH = 8;
 
 typedef struct B {
@@ -33,11 +33,13 @@ Vector2 pos = {(float) height / 2, (float) width / 2};
 Vector2 vel = {0.0f, 0.0f};
 float angle = 0;
 
+int l = 0;
+
 int clamp(Vector2 *vec) {
 	if (vec->x > width+LENGTH) vec->x -= width+LENGTH;
-	if (vec->x < -LENGTH) vec->x += width+LENGTH;
+	if (vec->x < -LENGTH) vec->x += width+LENGTH*2;
 	if (vec->y > height+LENGTH) vec->y -= height+LENGTH;
-	if (vec->y < -LENGTH) vec->y += height+LENGTH;
+	if (vec->y < -LENGTH) vec->y += height+LENGTH*2;
 } 
 
 double magnitude(Vector2 *vec) {
@@ -140,9 +142,6 @@ int breakAsteroid(int i) {
 		);
 	}
 }
-//DEBUG HERE
-static int lpress = 0;
-//
 
 int draw() {
 	if (IsKeyDown(KEY_RIGHT)) angle -= 0.1f;
@@ -153,14 +152,13 @@ int draw() {
 		vel.y += cos(angle) * THRUST;
 	}
 
-	//DEBUG AUTOBREAKING ASTEROIDS
 	if (IsKeyDown(KEY_SPACE)) {
-		if (lpress == 0) {
+		if (l == 0) {
 			shoot();
-			lpress = 1;
+			l = 1;
 		}
 	} else {
-		lpress = 0;
+		l = 0;
 	}
 
 
@@ -190,6 +188,14 @@ int draw() {
 			b->pos.x += b->vel.x;
 			b->pos.y += b->vel.y;
 			clamp(&b->pos);
+
+			for (int j=0; j < sizeof(asteroids) / sizeof(Asteroid); j++) {
+				 if (CheckCollisionPointCircle(b->pos, asteroids[j].pos, pow(2, asteroids[j].size + 1))) {
+					b->size=0;
+					breakAsteroid(j);
+					break;
+				 }
+			}
 		}
 	}
 
