@@ -1,12 +1,14 @@
 PROG=asteroids
 CC=gcc
-FLAGS=-lm `pkg-config -libs raylib`
+FLAGS=-lm -lraylib 
 
-.DEFAULT_GOAL := run
+.DEFAULT_GOAL := install 
 
 ${PROG}: ${PROG}.c
 	${CC} ${PROG}.c -o ${PROG} ${FLAGS}
 
-run: ${PROG}
-	./${PROG} 
+install: ${PROG}
+	cp ${PROG} ~/.local/bin/
 
+clean: ${PROG}
+	rm ${PROG}
