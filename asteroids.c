@@ -4,8 +4,8 @@
 #include <math.h>
 #include <time.h>
 
-const int width = 2650;
-const int height = 1440;
+const int width = 800;
+const int height = 800;
 const int fps = 60;
 
 const Color bg = BLACK;
