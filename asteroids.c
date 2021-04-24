@@ -142,7 +142,7 @@ int breakAsteroid(int i) {
 	asteroids[i].size -= 1;
 	if (asteroids[i].size > 0) {
 		// split the velocity in 2, adding a bit extra from the lazer
-		double m = (magnitude(&asteroids[i].vel) + 0.3d*S_SPEED)*0.5d;
+		double m = (magnitude(&asteroids[i].vel) + 0.3*S_SPEED)*0.5;
 		randVec(&asteroids[i].vel, m);
 		int s = pow(2, asteroids[i].size + 1);
 		addAsteroid(
@@ -310,8 +310,6 @@ int main() {
 	reset();
 	InitWindow(width, height, "game");
 
-	Vector2 m = GetMonitorPosition(1);
-	SetWindowPosition(m.x, m.y);
 	SetTargetFPS(60);
 
 	while (!WindowShouldClose()) {
